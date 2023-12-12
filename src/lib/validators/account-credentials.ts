@@ -15,9 +15,4 @@ export const AuthCredentialsValidator = z
     path: ["passwordConfirmation"],
   });
 
-//export type AuthCredentials = z.infer<typeof AuthCredentialsValidator>;
-export type AuthCredentials = {
-  email: string;
-  password: string;
-  passwordConfirmation?: string;
-};
+export type AuthCredentials = z.infer<typeof AuthCredentialsValidator>;
