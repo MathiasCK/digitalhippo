@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const AuthCredentialsValidator = z
+export const SignUpValidator = z
   .object({
     email: z.string().email(),
     password: z
@@ -15,4 +15,4 @@ export const AuthCredentialsValidator = z
     path: ["passwordConfirmation"],
   });
 
-export type AuthCredentials = z.infer<typeof AuthCredentialsValidator>;
+export type SignUpCredentials = z.infer<typeof SignUpValidator>;

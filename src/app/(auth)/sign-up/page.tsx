@@ -11,27 +11,50 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { cn } from "@/lib/utils";
 import {
-  AuthCredentials,
-  AuthCredentialsValidator,
+  SignUpCredentials,
+  SignUpValidator,
 } from "@/lib/validators/account-credentials";
 import { trpc } from "@/trpc/client";
+import { toast } from "sonner";
+import { ZodError } from "zod";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
+  const router = useRouter();
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<AuthCredentials>({
-    resolver: zodResolver(AuthCredentialsValidator),
+  } = useForm<SignUpCredentials>({
+    resolver: zodResolver(SignUpValidator),
   });
 
-  const { mutate } = trpc.auth.createPayloadUser.useMutation({});
+  const { mutate } = trpc.auth.createPayloadUser.useMutation({
+    onError: error => {
+      if (error.data?.code === "CONFLICT") {
+        toast.error("This email is already in use. Sign in instead?");
+        return;
+      }
+
+      if (error instanceof ZodError) {
+        toast.error(error.issues[0].message);
+        return;
+      }
+
+      toast.error("Something went wrong. Please try again later");
+    },
+    onSuccess: ({ sentToEmail }) => {
+      toast.success(`Verification email sent to ${sentToEmail}`);
+      router.push(`/verify-email?to=${sentToEmail}`);
+    },
+  });
 
   const onSubmit = ({
     email,
     password,
     passwordConfirmation,
-  }: AuthCredentials) => {
+  }: SignUpCredentials) => {
     mutate({ email, password, passwordConfirmation });
   };
 
@@ -65,8 +88,8 @@ const SignUp = () => {
                     })}
                     placeholder="you@example.com"
                   />
-                  {errors.email && (
-                    <p className="max-w-prose text-muted-foreground text-red-500">
+                  {errors?.email && (
+                    <p className="text-small text-red-500">
                       {errors.email.message}
                     </p>
                   )}
@@ -81,8 +104,8 @@ const SignUp = () => {
                     })}
                     placeholder="Password"
                   />
-                  {errors.password && (
-                    <p className="max-w-prose text-muted-foreground text-red-500">
+                  {errors?.password && (
+                    <p className="text-small text-red-500">
                       {errors.password.message}
                     </p>
                   )}
@@ -97,8 +120,8 @@ const SignUp = () => {
                     })}
                     placeholder="Password"
                   />
-                  {errors.passwordConfirmation && (
-                    <p className="max-w-prose text-muted-foreground text-red-500">
+                  {errors?.passwordConfirmation && (
+                    <p className="text-small text-red-500">
                       {errors.passwordConfirmation.message}
                     </p>
                   )}
