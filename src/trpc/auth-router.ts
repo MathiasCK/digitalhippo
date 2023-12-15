@@ -1,4 +1,7 @@
-import { SignUpValidator } from "../lib/validators/account-credentials";
+import {
+  SignInValidator,
+  SignUpValidator,
+} from "../lib/validators/account-credentials";
 import { publicProcedure, router } from "./trpc";
 import { getPayloadClient } from "../server/get-payload";
 import { TRPCError } from "@trpc/server";
@@ -35,6 +38,31 @@ export const authRouter = router({
         },
       });
       return { success: true, sentToEmail: email };
+    }),
+  signIn: publicProcedure
+    .input(SignInValidator)
+    .mutation(async ({ input, ctx }) => {
+      const { res } = ctx;
+      const { email, password } = input;
+
+      const payload = await getPayloadClient();
+      try {
+        await payload.login({
+          collection: "users",
+          data: {
+            email,
+            password,
+          },
+          // To set cookie
+          res,
+        });
+
+        return { success: true };
+      } catch (error) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+        });
+      }
     }),
   verifyEmail: publicProcedure
     .input(z.object({ token: z.string() }))

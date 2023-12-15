@@ -16,3 +16,12 @@ export const SignUpValidator = z
   });
 
 export type SignUpCredentials = z.infer<typeof SignUpValidator>;
+
+export const SignInValidator = z.object({
+  email: z.string().email(),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" }),
+});
+
+export type SignInCredentials = z.infer<typeof SignInValidator>;

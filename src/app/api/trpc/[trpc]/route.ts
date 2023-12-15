@@ -6,6 +6,7 @@ const handler = (req: Request, _: Response) => {
     endpoint: "/api/trpc",
     req,
     router: appRouter,
+    // @ts-ignore context already passed from express middleware
     createContext: () => ({}),
   });
 };
