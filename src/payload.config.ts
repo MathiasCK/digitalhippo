@@ -3,7 +3,7 @@ import { mongooseAdapter } from "@payloadcms/db-mongodb";
 import { slateEditor } from "@payloadcms/richtext-slate";
 import { webpackBundler } from "@payloadcms/bundler-webpack";
 import path from "path";
-import { Users } from "./collections";
+import { Users, Products, Media, ProductFiles } from "./collections";
 import dotenv from "dotenv";
 
 dotenv.config({
@@ -12,7 +12,7 @@ dotenv.config({
 
 export default buildConfig({
   serverURL: process.env.NEXT_PUBLIC_PAYLOAD_SERVER_URL!,
-  collections: [Users],
+  collections: [Users, Products, Media, ProductFiles],
   routes: {
     admin: "/dashboard",
   },
