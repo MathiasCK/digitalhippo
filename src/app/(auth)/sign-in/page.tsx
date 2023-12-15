@@ -51,7 +51,6 @@ const SignIn: NextPage = () => {
     },
     onSuccess: () => {
       toast.success("Signed in successfully");
-      router.refresh();
 
       if (origin) {
         router.push(`/${origin}`);
@@ -64,6 +63,7 @@ const SignIn: NextPage = () => {
       }
 
       router.push("/");
+      router.refresh();
     },
   });
 
@@ -125,7 +125,7 @@ const SignIn: NextPage = () => {
                     </p>
                   )}
                 </div>
-                <Button>Sign up</Button>
+                <Button>Sign in</Button>
               </div>
             </form>
             <div className="relative">
