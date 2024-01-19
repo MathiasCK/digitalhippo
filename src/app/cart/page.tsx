@@ -4,13 +4,27 @@ import { Button } from "@/components/ui/Button";
 import { PRODUCT_CATEGORIES } from "@/config";
 import { useCart } from "@/hooks";
 import { cn, formatPrice } from "@/lib/utils";
+import { trpc } from "@/trpc/client";
 import { Check, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const CartPage = () => {
   const { items, removeItem } = useCart();
+  const router = useRouter();
+
+  const { mutate: createCheckoutSession, isLoading } =
+    trpc.payment.createSession.useMutation({
+      onSuccess: ({ url }) => {
+        if (url) {
+          router.push(url);
+        }
+      },
+    });
+
+  const productIds = items.map(({ product }) => product.id);
 
   const cartTotal = items.reduce(
     (total, { product }) => total + product.price,
@@ -124,9 +138,9 @@ const CartPage = () => {
                         </div>
                         <p className="mt-4 flex space-x-2 text-sm text-gray-700">
                           <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
-                          <p className="ml-2 text-small text-muted-foreground">
+                          <span className="ml-2 text-small text-muted-foreground">
                             Eligable for instant delivery
-                          </p>
+                          </span>
                         </p>
                       </div>
                     </li>
@@ -165,8 +179,19 @@ const CartPage = () => {
               </div>
             </div>
             <div className="mt-6">
-              <Button className="w-full" size="lg">
-                Checkout
+              <Button
+                disabled={isMounted && (items.length === 0 || isLoading)}
+                onClick={() => {
+                  createCheckoutSession({ productIds });
+                }}
+                className="w-full"
+                size="lg"
+              >
+                {isLoading ? (
+                  <Loader2 className="w-4 h-4 animate-spin mr-1.5" />
+                ) : (
+                  "Checkout"
+                )}
               </Button>
             </div>
           </section>
