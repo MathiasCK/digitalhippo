@@ -1,5 +1,62 @@
+import { BeforeChangeHook } from "payload/dist/globals/config/types";
 import { PRODUCT_CATEGORIES } from "../config";
-import { CollectionConfig } from "payload/types";
+import { Product } from "../payload-types";
+import { CollectionConfig, PayloadRequest } from "payload/types";
+import { stripe } from "../lib/stripe";
+
+const addUser = async ({
+  req,
+  data,
+}: {
+  req: PayloadRequest;
+  data: Partial<any>;
+}) => {
+  const user = req.user;
+
+  return {
+    ...data,
+    user: user.id,
+  };
+};
+
+// @ts-ignore
+const handleStripeProduct = async args => {
+  if (args.operation === "create") {
+    const data = args.data as Product;
+    const createdProduct = await stripe.products.create({
+      name: data.name,
+      default_price_data: {
+        currency: "usd",
+        unit_amount: Math.round(data.price * 100),
+      },
+    });
+
+    const updated: Product = {
+      ...data,
+      stripeId: createdProduct.id,
+      priceId: createdProduct.default_price as string,
+    };
+
+    return updated;
+  } else if (args.operation === "update") {
+    const data = args.data as Product;
+    const updatedProduct = await stripe.products.update(
+      data.stripeId as string,
+      {
+        name: data.name,
+        default_price: data.priceId as string,
+      },
+    );
+
+    const updated: Product = {
+      ...data,
+      stripeId: updatedProduct.id,
+      priceId: updatedProduct.default_price as string,
+    };
+
+    return updated;
+  }
+};
 
 const Products: CollectionConfig = {
   slug: "products",
@@ -7,6 +64,9 @@ const Products: CollectionConfig = {
     useAsTitle: "name",
   },
   access: {},
+  hooks: {
+    beforeChange: [addUser, handleStripeProduct],
+  },
   fields: [
     {
       name: "user",
