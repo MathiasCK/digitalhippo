@@ -5,7 +5,7 @@ const Users: CollectionConfig = {
   auth: {
     verify: {
       generateEmailHTML: ({ token }) => {
-        return /*html*/ `<a href='${process.env.NEXT_PUBLIC_PAYLOAD_SERVER_URL}/verify-email?token=${token}'>Verify account</a>`;
+        return /*html*/ `<a href='${process.env.NEXT_PUBLIC_SERVER_URL}/verify-email?token=${token}'>Verify account</a>`;
       },
     },
   },

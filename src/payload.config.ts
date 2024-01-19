@@ -11,7 +11,7 @@ dotenv.config({
 });
 
 export default buildConfig({
-  serverURL: process.env.NEXT_PUBLIC_PAYLOAD_SERVER_URL!,
+  serverURL: process.env.NEXT_PUBLIC_SERVER_URL!,
   collections: [Users, Products, Media, ProductFiles, Orders],
   routes: {
     admin: "/dashboard",
