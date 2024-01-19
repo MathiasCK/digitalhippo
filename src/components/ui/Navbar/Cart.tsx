@@ -9,16 +9,33 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../Sheet";
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Separator } from "../Separator";
 import { formatPrice } from "@/lib/utils";
 import { buttonVariants } from "../Button";
 import Image from "next/image";
 import Link from "next/link";
+import { useCart } from "@/hooks";
+import { ScrollArea } from "../Scroll";
+import CartItem from "./CartItem";
 
 const Cart = () => {
-  const itemCount = 0;
+  const { items } = useCart();
+
+  const itemCount = items.length;
   const fee = 1;
+
+  // Cart is stored in localStorage, this fixes hydration mismatch
+  const [isMounted, setIsMounted] = useState<boolean>(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const cartTotal = items.reduce(
+    (total, { product }) => total + product.price,
+    0,
+  );
   return (
     <Sheet>
       <SheetTrigger className="group -m-2 flex items-center p-2">
@@ -27,7 +44,7 @@ const Cart = () => {
           aria-hidden="true"
         />
         <span className="ml-2 text-sm font-medium text-gray-700 group-hover:text-gray-500">
-          {itemCount}
+          {isMounted ? itemCount : 0}
         </span>
       </SheetTrigger>
       <SheetContent className="flex w-full flex-col pr-0 sm:max-w-lg">
@@ -37,8 +54,11 @@ const Cart = () => {
         {itemCount > 0 ? (
           <Fragment>
             <div className="flex w-full flex-col pr-6">
-              {/* TODO: Cart logic */}
-              Cart items
+              <ScrollArea>
+                {items.map(({ product }) => (
+                  <CartItem key={product.id} product={product} />
+                ))}
+              </ScrollArea>
             </div>
             <div className="space-y-4 pr-6">
               <Separator />
@@ -53,7 +73,7 @@ const Cart = () => {
                 </div>
                 <div className="flex">
                   <span className="flex-1">Total</span>
-                  <span>{formatPrice(fee)}</span>
+                  <span>{formatPrice(fee + cartTotal)}</span>
                 </div>
               </div>
               <SheetFooter>
