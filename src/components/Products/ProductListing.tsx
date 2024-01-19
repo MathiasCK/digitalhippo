@@ -6,6 +6,7 @@ import { Skeleton } from "../ui/Skeleton";
 import Link from "next/link";
 import { cn, formatPrice } from "@/lib/utils";
 import { PRODUCT_CATEGORIES } from "@/config";
+import ImageSlider from "../ui/ImageSlider";
 
 interface ProductListingProps {
   product: Product | null;
@@ -41,6 +42,10 @@ const ProductListing = ({ product, index }: ProductListingProps) => {
   }
 
   if (isVisible && product) {
+    const validUrls = product.images
+      .map(({ image }) => (typeof image === "string" ? image : image.url))
+      .filter(Boolean) as string[];
+
     const label = PRODUCT_CATEGORIES.find(p => p.value === product.category);
     return (
       <Link
@@ -50,6 +55,7 @@ const ProductListing = ({ product, index }: ProductListingProps) => {
         })}
       >
         <div className="flex flex-col w-full">
+          <ImageSlider urls={validUrls} />
           <h3 className="mt-4 font-medium text-sm text-gray-700">
             {product.name}
           </h3>
