@@ -40,7 +40,7 @@ const Orders: CollectionConfig = {
     {
       name: "user",
       type: "relationship",
-      hidden: true,
+      required: true,
       admin: {
         hidden: true,
       },
