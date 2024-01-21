@@ -5,6 +5,7 @@ import { buttonVariants } from "../Button";
 import { getServerSideUser } from "@/lib/payload-utils";
 import { cookies } from "next/headers";
 import { UserAccountNav, Cart, NavItems } from ".";
+import MobileNav from "./ModileNav";
 
 const Navbar = async () => {
   const nextCookies = cookies();
@@ -15,7 +16,7 @@ const Navbar = async () => {
         <MaxWidthWrapper>
           <div className="border-b border-gray-200">
             <div className="flex h-16 items-center">
-              {/* Mobile nav */}{" "}
+              <MobileNav />
               <div className="ml-4 lg:ml-0">
                 <Link href="/">
                   <Icons.logo className="h-10 w-10" />
