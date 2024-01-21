@@ -1,7 +1,7 @@
 import { BeforeChangeHook } from "payload/dist/globals/config/types";
 import { PRODUCT_CATEGORIES } from "../config";
-import { Product } from "../payload-types";
-import { CollectionConfig, PayloadRequest } from "payload/types";
+import { Product, User } from "../payload-types";
+import { Access, CollectionConfig, PayloadRequest } from "payload/types";
 import { stripe } from "../lib/stripe";
 
 const addUser = async ({
@@ -17,6 +17,43 @@ const addUser = async ({
     ...data,
     user: user.id,
   };
+};
+
+const syncUser = async ({
+  req,
+  doc,
+}: {
+  req: PayloadRequest;
+  doc: Partial<any>;
+}) => {
+  const fullUser = await req.payload.findByID({
+    collection: "users",
+    id: req.user.id,
+  });
+
+  if (fullUser && typeof fullUser === "object") {
+    const { products } = fullUser;
+
+    const allProductIds = [
+      ...(products?.map(product =>
+        typeof product === "object" ? product.id : product,
+      ) || []),
+    ];
+
+    const createdProductIds = allProductIds.filter(
+      (id, idx) => allProductIds.indexOf(id) === idx,
+    );
+
+    const dataToUpdate = [...createdProductIds, doc.id];
+
+    await req.payload.update({
+      collection: "users",
+      id: req.user.id,
+      data: {
+        products: dataToUpdate,
+      },
+    });
+  }
 };
 
 // @ts-ignore
@@ -58,13 +95,46 @@ const handleStripeProduct = async args => {
   }
 };
 
+const isAdminOrHasAccess =
+  (): Access =>
+  ({ req: { user: _user } }) => {
+    const user = _user as User | undefined;
+
+    if (!user) return false;
+    if (user.role === "admin") return true;
+
+    const userProductIds = (user.products || []).reduce<string[]>(
+      (acc, product) => {
+        if (!product) return acc;
+        if (typeof product === "string") {
+          acc.push(product);
+        } else {
+          acc.push(product.id);
+        }
+        return acc;
+      },
+      [],
+    );
+
+    return {
+      id: {
+        in: userProductIds,
+      },
+    };
+  };
+
 const Products: CollectionConfig = {
   slug: "products",
   admin: {
     useAsTitle: "name",
   },
-  access: {},
+  access: {
+    read: isAdminOrHasAccess(),
+    update: isAdminOrHasAccess(),
+    delete: isAdminOrHasAccess(),
+  },
   hooks: {
+    afterChange: [syncUser],
     beforeChange: [addUser, handleStripeProduct],
   },
   fields: [

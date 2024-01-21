@@ -20,6 +20,8 @@ export interface Config {
 }
 export interface User {
   id: string;
+  products?: (string | Product)[] | null;
+  product_files?: (string | ProductFile)[] | null;
   role?: ('admin' | 'user') | null;
   updatedAt: string;
   createdAt: string;
@@ -105,7 +107,7 @@ export interface Media {
 export interface Order {
   id: string;
   _isPaid: boolean;
-  user?: (string | null) | User;
+  user: string | User;
   products: (string | Product)[];
   updatedAt: string;
   createdAt: string;
